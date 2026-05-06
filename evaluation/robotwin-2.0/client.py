@@ -66,22 +66,28 @@ ALL_TASKS = [
 print("Number of tasks evaluating:", len(ALL_TASKS))
 
 def quat_to_rotate6D(q: np.ndarray) -> np.ndarray:
-    return R.from_quat(q).as_matrix()[..., :, :2].reshape(q.shape[:-1] + (6,))
+    """RoboTwin quaternion (wxyz) -> rotation 6D. q: (..., 4) -> (..., 6)."""
+    q = np.asarray(q, dtype=np.float64)
+    q_xyzw = np.concatenate([q[..., 1:4], q[..., 0:1]], axis=-1)
+    return R.from_quat(q_xyzw).as_matrix()[..., :, :2].reshape(q.shape[:-1] + (6,))
 
 
 def rotate6D_to_quat(v6: np.ndarray) -> np.ndarray:
-    v6 = np.asarray(v6)
-    if v6.shape[-1] != 6:
-        raise ValueError("Last dimension must be 6 (got %s)" % (v6.shape[-1],))
-    a1 = v6[..., 0:5:2]
-    a2 = v6[..., 1:6:2]
-    b1 = a1 / np.linalg.norm(a1, axis=-1, keepdims=True)
+    """rotation 6D -> RoboTwin quaternion (wxyz).  v6: (..., 6) -> (..., 4)
+
+    Gram-Schmidt 
+    """
+    v6 = np.asarray(v6, dtype=np.float64)
+    a1 = v6[..., 0:5:2] 
+    a2 = v6[..., 1:6:2]  #
+    b1 = a1 / (np.linalg.norm(a1, axis=-1, keepdims=True) + 1e-8)
     proj = np.sum(b1 * a2, axis=-1, keepdims=True) * b1
     b2 = a2 - proj
-    b2 = b2 / np.linalg.norm(b2, axis=-1, keepdims=True)
+    b2 = b2 / (np.linalg.norm(b2, axis=-1, keepdims=True) + 1e-8)
     b3 = np.cross(b1, b2)
-    rot_mats = np.stack((b1, b2, b3), axis=-1)      # shape (..., 3, 3)
-    return R.from_matrix(rot_mats).as_quat()
+    rot_mats = np.stack((b1, b2, b3), axis=-1)  # (..., 3, 3)
+    q_xyzw = R.from_matrix(rot_mats).as_quat()
+    return np.concatenate([q_xyzw[..., 3:4], q_xyzw[..., 0:3]], axis=-1)#wxyz
 
 def decode_image_from_bytes(camera_rgb_image):
     if isinstance(camera_rgb_image, (bytes, bytearray)): camera_rgb_image = np.frombuffer(camera_rgb_image, dtype=np.uint8)
@@ -239,7 +245,7 @@ def _rollout(env, policy):
         # Final rollout action (16 dimensions total)
         rollout_action = np.concatenate([left_new, right_new], axis=1)  # (B, 16)
         for action in tqdm(rollout_action):
-            env.take_action(action, action_type='ee')  # target_pose: np.array([x, y, z, qx, qy, qz, qw])
+            env.take_action(action, action_type='ee')  # target_pose: np.array([x, y, z, qw, qx, qy, qz])
             obs = env.get_obs()
             obs['endpose']['left_endpose'] = list(action[:7].reshape(7,))
             obs['endpose']['right_endpose'] = list(action[8:-1].reshape(7,))
