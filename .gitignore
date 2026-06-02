@@ -218,5 +218,6 @@ logs/
 metas/
 demo.ipynb
 
-data/
-checkpoints/
+# Repo-root data & checkpoints (often local symlinks; never commit)
+/data
+/checkpoints
