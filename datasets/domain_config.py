@@ -54,6 +54,8 @@ DATA_DOMAIN_ID = {
     "AIR-AGILEX": 10,
     "AIRBOT": 18,
     
+    "ARX-A5": 19,
+
     # pretraining
     "robomind-franka": 11,
     "robomind-ur": 12,

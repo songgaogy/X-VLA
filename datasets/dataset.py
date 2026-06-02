@@ -71,6 +71,15 @@ class InfiniteDataReader(IterableDataset):
                     for line in f: meta['datalist'].append(json.loads(line.decode("utf-8")))
                 self.metas[meta['root_path']] = meta
                 print(f"== lerobot dataset {meta['robot_type']} with {meta['total_episodes']} trajs at {meta['root_path']}====")
+            ### Lerobot v3.0 style
+            elif "codebase_version" in meta.keys() and meta["codebase_version"] == 'v3.0':
+                meta['datalist'] = []
+                episodes_path = fileio.join_path(meta["root_path"], meta["episodes_path"])
+                with io.BytesIO(fileio.get(episodes_path)) as f:
+                    for line in f: meta['datalist'].append(json.loads(line.decode("utf-8")))
+                dataset_name = meta.get("dataset_name", meta["root_path"])
+                self.metas[dataset_name] = meta
+                print(f"== lerobot dataset {meta['robot_type']} with {len(meta['datalist'])} trajs at {meta['root_path']}====")
             else: raise NotImplementedError(f"unrecognized meta file format: {file}")
 
         self.image_aug = [

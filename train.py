@@ -30,6 +30,7 @@ from torch.optim import AdamW
 
 from accelerate import Accelerator
 from datasets import create_dataloader
+from models.configuration_xvla import XVLAConfig
 from models.modeling_xvla import XVLA
 from models.processing_xvla import XVLAProcessor
 
@@ -78,6 +79,7 @@ def get_args_parser():
     # Data
     parser.add_argument("--train_metas_path", type=str, required=True, help="Path to training metadata")
     parser.add_argument("--batch_size", type=int, default=16)
+    parser.add_argument("--action_mode", type=str, default=None, help="Override checkpoint action space")
 
     # Optimizer
     parser.add_argument("--learning_rate", type=float, default=1e-4)
@@ -190,8 +192,12 @@ def main(args):
     logger.info(f"Args: {args}")
 
     # Load model & processor
-    model = XVLA.from_pretrained(args.models)
+    config = XVLAConfig.from_pretrained(args.models)
+    if args.action_mode is not None:
+        config.action_mode = args.action_mode
+    model = XVLA.from_pretrained(args.models, config=config)
     processor = XVLAProcessor.from_pretrained(args.models)
+    logger.info(f"🚀 loaded model and processor successfully | action_mode={model.action_mode} | model_path={args.models}")
 
     # Iterable dataloader (don't wrap with prepare)
     train_dataloader = create_dataloader(

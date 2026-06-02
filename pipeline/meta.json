@@ -1,0 +1,20 @@
+{
+  "dataset_name": "ARX-A5",
+  "codebase_version": "v3.0",
+  "robot_type": "ARX-A5",
+  "root_path": "data/arx_a5/put_shrimp_in_pot_ee6d",
+  "episodes_path": "meta/episodes.jsonl",
+  "tasks_path": "meta/tasks.parquet",
+  "fps": 30,
+  "total_episodes": 200,
+  "chunks_size": 1000,
+  "data_path": "data/chunk-{chunk_index:03d}/episode_{file_index:06d}.parquet",
+  "video_path": "videos/chunk-{chunk_index:03d}/{video_key}/episode_{file_index:06d}.mp4",
+  "camera_views": [
+    "observation.images.global_front",
+    "observation.images.wrist_left",
+    "observation.images.wrist_right"
+  ],
+  "state_key": "observation.state",
+  "action_key": "action"
+}

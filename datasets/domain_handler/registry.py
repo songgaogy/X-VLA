@@ -23,7 +23,7 @@ from .lerobot_agibot import AGIBOTLeRobotHandler
 from .agiworld import AGIWolrdHandler
 from .robomind import RobomindHandler
 from .droid import DroidHandler
-from .real_world import AIRAgilexHandler, AIRAgilexHQHandler, AIRBotHandler, WidowxAirHandler
+from .real_world import AIRAgilexHandler, AIRAgilexHQHandler, AIRBotHandler, WidowxAirHandler, AIRARXHandler
 from .simulations import BridgeHandler, LiberoHandler, VLABenchHandler, RobotWin2Handler, RobocasaHumanHandler, CalvinHandler, RT1Handler
 from .lerobotv21 import LeRobotV21Handler
 from .x2robot import X2RobotHandler
@@ -50,6 +50,9 @@ _REGISTRY: Dict[str, Type[DomainHandler]] = {
     "AIR-AGILEX-HQ": AIRAgilexHQHandler,
     "AIRBOT": AIRBotHandler,
     "widowx-air": WidowxAirHandler,
+
+    # ARX robot.
+    "ARX-A5": AIRARXHandler,
 
     # Sim/others
     "Bridge": BridgeHandler,
